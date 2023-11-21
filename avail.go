@@ -96,7 +96,6 @@ func (c *AvailDA) Submit(daBlobs []da.Blob) ([]da.ID, []da.Proof, error) {
 func (c *AvailDA) Get(ids []da.ID) ([]da.Blob, error) {
 	var blobs [][]byte
 	var blockNumber uint32
-
 	for _, id := range ids {
 		blockNumber = binary.BigEndian.Uint32(id)
 		blocksURL := fmt.Sprintf(c.config.LcURL+c.config.BlocksURL, blockNumber)
@@ -116,7 +115,6 @@ func (c *AvailDA) Get(ids []da.ID) ([]da.Blob, error) {
 		defer func() {
 			_ = response.Body.Close()
 		}()
-
 		responseData, err := io.ReadAll(response.Body)
 		if err != nil {
 			return nil, err
@@ -131,7 +129,6 @@ func (c *AvailDA) Get(ids []da.ID) ([]da.Blob, error) {
 		}
 	}
 	return blobs, nil
-
 }
 
 func (c *AvailDA) GetIDs(height uint64) ([]da.ID, error) {
