@@ -19,6 +19,7 @@ type SubmitRequest struct {
 }
 
 type SubmitResponse struct {
+	BlockNumber      uint32 `json:"block_number"`
 	BlockHash        string `json:"block_hash"`
 	TransactionHash  string `json:"hash"`
 	TransactionIndex uint32 `json:"index"`
@@ -86,7 +87,7 @@ func (c *AvailDA) Submit(daBlobs []da.Blob) ([]da.ID, []da.Proof, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		ids[index] = makeID(submitResponse.TransactionIndex, submitResponse.BlockHash)
+		ids[index] = makeID(submitResponse.BlockNumber)
 	}
 	fmt.Println("succesfully submitted blobs to avail")
 	return ids, nil, nil
@@ -138,20 +139,18 @@ func (c *AvailDA) GetIDs(height uint64) ([]da.ID, error) {
 	return [][]byte{ids}, nil
 }
 
+// Commit creates a Commitment for each given Blob.
 func (c *AvailDA) Commit(daBlobs []da.Blob) ([]da.Commitment, error) {
 	return nil, nil
 }
 
+// Validate validates Commitments against the corresponding Proofs
 func (c *AvailDA) Validate(ids []da.ID, daProofs []da.Proof) ([]bool, error) {
 	return nil, nil
 }
 
-// This is 4 as uint32 consists of 4 bytes
-const txIndexLen = 4
-
-func makeID(txIndex uint32, blockHash string) da.ID {
-	id := make([]byte, txIndexLen+len(blockHash))
-	binary.LittleEndian.PutUint32(id, txIndex)
-	copy(id[txIndexLen:], []byte(blockHash))
+func makeID(blockNumber uint32) da.ID {
+	id := make([]byte, 8)
+	binary.BigEndian.PutUint32(id, blockNumber)
 	return id
 }
