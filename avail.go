@@ -36,23 +36,23 @@ type DataTransactions struct {
 }
 
 type Config struct {
-	LcURL     string `json:"lc_url"`
-	BlocksURL string `json:"blocks_url"`
+	AppID uint32 `json:"app_ID"`
+	LcURL string `json:"lc_url"`
 }
+
+const BlockURL = "/blocks/%d/data?fields=data,extrinsic"
 
 // AvailDA implements the avail backend for the DA interface
 type AvailDA struct {
-	appID  uint32
 	config Config
 	ctx    context.Context
 }
 
 // NewAvailDA returns an instance of AvailDA
-func NewAvailDA(appID uint32, ctx context.Context) *AvailDA {
+func NewAvailDA(config Config, ctx context.Context) *AvailDA {
 	return &AvailDA{
-		appID:  appID,
 		ctx:    ctx,
-		config: Config{LcURL: "http://localhost:8000/v2", BlocksURL: "/blocks/%d/data?fields=data,extrinsic"},
+		config: Config{LcURL: config.LcURL, AppID: config.AppID},
 	}
 }
 
@@ -99,7 +99,7 @@ func (c *AvailDA) Get(ids []da.ID) ([]da.Blob, error) {
 	var blockNumber uint32
 	for _, id := range ids {
 		blockNumber = binary.BigEndian.Uint32(id)
-		blocksURL := fmt.Sprintf(c.config.LcURL+c.config.BlocksURL, blockNumber)
+		blocksURL := fmt.Sprintf(c.config.LcURL+BlockURL, blockNumber)
 		parsedURL, err := url.Parse(blocksURL)
 		if err != nil {
 			return nil, err
@@ -150,6 +150,7 @@ func (c *AvailDA) Validate(ids []da.ID, daProofs []da.Proof) ([]bool, error) {
 }
 
 func makeID(blockNumber uint32) da.ID {
+	// IDs are not unique in rollkit context and that this has to be improved
 	id := make([]byte, 8)
 	binary.BigEndian.PutUint32(id, blockNumber)
 	return id

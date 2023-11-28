@@ -2,22 +2,31 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
 	"github.com/rollkit/avail-da"
 	"github.com/rollkit/go-da/proxy"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	var appID uint32
-	appID = 1
+	data, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		log.Fatalln("Error reading config file:", err)
+	}
+	// Parse the configuration data into a Config struct
+	var config avail.Config
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		log.Fatalln("Error parsing config file:", err)
+	}
 	ctx := context.Background()
-	da := avail.NewAvailDA(appID, ctx)
+	da := avail.NewAvailDA(config, ctx)
 	srv := proxy.NewServer(da, grpc.Creds(insecure.NewCredentials()))
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
