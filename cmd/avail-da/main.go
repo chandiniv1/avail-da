@@ -19,7 +19,7 @@ func main() {
 	ctx := context.Background()
 	da := avail.NewAvailDA(appID, ctx)
 	srv := proxy.NewServer(da, grpc.Creds(insecure.NewCredentials()))
-	lis, err := net.Listen("tcp", "")
+	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		log.Fatalln("failed to create network listener:", err)
 	}
